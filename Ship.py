@@ -1,4 +1,4 @@
-from exceptions .ChangeForbiddenError import ChangeForbiddenError
+from ChangeForbiddenError import ChangeForbiddenError
 
 
 class Ship:

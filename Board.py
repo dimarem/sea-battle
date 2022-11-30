@@ -1,9 +1,9 @@
-from exceptions.ShipExistError import ShipExistError
-from exceptions.ChangeForbiddenError import ChangeForbiddenError
-from exceptions.CellsAllocationError import CellsAllocationError
-from exceptions.ShipDislocationAreaError import ShipDislocationAreaError
-from exceptions.ShootError import ShootError
-from exceptions.CellCoordError import CellCoordError
+from ShipExistsError import ShipExistsError
+from ChangeForbiddenError import ChangeForbiddenError
+from CellsAllocationError import CellsAllocationError
+from ShipDislocationAreaError import ShipDislocationAreaError
+from ShootError import ShootError
+from CellCoordsError import CellCoordsError
 from Cell import Cell
 from Ship import Ship
 
@@ -47,10 +47,28 @@ class Board:
     @property
     def max(self) -> int:
         '''Максимально допустимая координата ячейки по оси Y.'''
-        return self._max
+        return self._max - 1
 
     @max.setter
     def max(self, value) -> None:
+        raise ChangeForbiddenError
+
+    @property
+    def all_cells_are_shot(self) -> bool:
+        '''Индикатор того, что все ячейки прострелены.'''
+        n = 0
+        for cells_row in self._cells:
+            for cell in cells_row:
+                if cell.shot:
+                    n += 1
+
+        if n == len(self._cells):
+            return True
+        else:
+            return False
+
+    @all_cells_are_shot.setter
+    def all_cells_are_shot(self) -> None:
         raise ChangeForbiddenError
 
     @property
@@ -73,7 +91,7 @@ class Board:
         ship - экземпляр класса корабля.
         '''
         if ship in self._ships:
-            raise ShipExistError
+            raise ShipExistsError
 
         ship_cells, ship_boundary_cells = self._allocate_cells(ship)
 
@@ -169,10 +187,10 @@ class Board:
         _max = self._max
 
         if x < _min or x > _max:
-            raise CellCoordError(f'''Координата "x" должна быть от {_min} до {_max}''')
+            raise CellCoordsError(f'''Координата "x" должна быть от {_min} до {_max}''')
 
         elif y < _min or y > _max:
-            raise CellCoordError(f'''Координата "y" должна быть от {_min} до {_max}''')
+            raise CellCoordsError(f'''Координата "y" должна быть от {_min} до {_max}''')
 
         cell = self._cells[x - 1][y - 1]
 
@@ -406,7 +424,7 @@ if __name__ == '__main__':
         # система координат для пользователя начинается с 1
         board.process_shot(-1, 4)
         board.print()
-    except CellCoordError as e:
+    except CellCoordsError as e:
         print(e)
 
     print()
@@ -419,7 +437,7 @@ if __name__ == '__main__':
         # система координат для пользователя начинается с 1
         board.process_shot(1, 14)
         board.print()
-    except CellCoordError as e:
+    except CellCoordsError as e:
         print(e)
 
     print()

@@ -1,4 +1,5 @@
 from random import randint
+import sys
 from BoardCreationError import BoardCreationError
 from ShipExistsError import ShipExistsError
 from CellsAllocationError import CellsAllocationError
@@ -32,10 +33,13 @@ class Controller:
         while True:
             if self._human_step:
                 try:
+                    print('=' * 25 + ' ВЫ ' + '=' * 25)
                     coords = self._get_cell_coords()
 
                     if len(coords) != 2:
                         raise InvalidCoordsError
+
+                    print(f'Вы стреляете по ячейке с координатами ({coords[0]}, {coords[1]})')
 
                     try:
                         self._ai_board.process_shot(coords[0], coords[1])
@@ -53,7 +57,9 @@ class Controller:
                     print('Выход.')
                     break
             else:
+                print('=' * 25 + ' ИИ ' + '=' * 25)
                 coords = self._ai_player.shoot()
+                print(f'ИИ стреляет по ячейке с координатами ({coords[0]}, {coords[1]})')
                 self._human_board.process_shot(coords[0], coords[1])
                 self._human_step = True
 
@@ -64,6 +70,8 @@ class Controller:
             if self._ai_board.all_cells_are_shot or self._human_board.all_cells_are_shot:
                 print('Ничья')
                 break
+
+            self.print_boards()
 
     def _setup(self):
         '''Формирует и заполняет доски для пользователя и ИИ.'''
@@ -77,6 +85,7 @@ class Controller:
                 self._setup()
             else:
                 print(e)
+                sys.exit()
 
     def _get_cell_coords(self) -> list[int, int]:
         '''Получить координаты выстрела.'''

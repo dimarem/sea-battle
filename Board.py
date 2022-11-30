@@ -55,20 +55,20 @@ class Board:
 
     @property
     def all_cells_are_shot(self) -> bool:
-        '''Индикатор того, что все ячейки прострелены.'''
+        '''Индикатор того, что по всем ячейкам были произведены выстрелы.'''
         n = 0
         for cells_row in self._cells:
             for cell in cells_row:
                 if cell.shot:
                     n += 1
 
-        if n == len(self._cells):
+        if n == (self._max * self._max):
             return True
         else:
             return False
 
     @all_cells_are_shot.setter
-    def all_cells_are_shot(self) -> None:
+    def all_cells_are_shot(self, value) -> None:
         raise ChangeForbiddenError
 
     @property
@@ -105,13 +105,15 @@ class Board:
         ship.boundary_cells = ship_boundary_cells
         self._ships.append(ship)
 
-        if self.display_ships:
-            for cell in ship_cells:
-                cell.occupied = True
+        for cell in ship_cells:
+            cell.occupied = True
 
-            if self.show_boundary:
-                for cell in ship_boundary_cells:
-                    cell.boundary = True
+            if self.display_ships:
+                cell.displayed = True
+
+        if self.show_boundary:
+            for cell in ship_boundary_cells:
+                cell.boundary = True
 
     def _allocate_cells(self, ship: Ship) -> tuple[list[Cell], list[Cell]]:
         '''Возвращает кортеж, в котором первый элемент это список ячеек доски,
@@ -183,8 +185,8 @@ class Board:
         x - координата ячейки по оси X.
         y - координата ячейки по оси Y.
         '''
-        _min = self._min + 1
-        _max = self._max
+        _min = self.min + 1
+        _max = self.max + 1
 
         if x < _min or x > _max:
             raise CellCoordsError(f'''Координата "x" должна быть от {_min} до {_max}''')
@@ -197,19 +199,21 @@ class Board:
         if cell.shot:
             raise ShootError
 
+        cell.shot = True
+
         for ship in self._ships:
             if cell in ship.cells:
-                cell.shot = True
                 cell.missed = False
                 ship.damage()
 
                 if ship.sunken:
-                    print('Потопил!')
+                    print('ПОТОПИЛ!!!')
                 else:
-                    print('Попал!')
-            else:
-                cell.shot = True
-                print('Промазал!')
+                    print('ПОПАЛ!!!')
+
+                return
+
+        print('ПРОМАЗАЛ!!!')
 
     def print(self) -> None:
         '''Вывести доску в консоль.'''
@@ -224,6 +228,7 @@ if __name__ == '__main__':
     min = board.min
     max = board.max
     all_ships_are_sunken = board.all_ships_are_sunken
+    all_cells_are_shot = board.all_cells_are_shot
 
     try:
         board.min = 123
@@ -240,9 +245,15 @@ if __name__ == '__main__':
     except ChangeForbiddenError:
         pass
 
+    try:
+        board.all_cells_are_shot = 123
+    except ChangeForbiddenError:
+        pass
+
     assert board.min == min
     assert board.max == max
     assert board.all_ships_are_sunken == all_ships_are_sunken
+    assert board.all_cells_are_shot == all_cells_are_shot
 
     # ------------------------ Отображение доски ------------------------
     # длина корабля

@@ -12,6 +12,7 @@ class Cell:
     missed - индикатор того, что попадания по кораблю не было.
     occupied - индикатор того, что ячейка занята кораблем.
     boundary - индикатор того, что ячейка примыкает к кораблю.
+    displayed - индикатор того, что ячейка корабля отображена.
     '''
     def __init__(self, x: int, y: int) -> None:
         self.x = x
@@ -20,6 +21,7 @@ class Cell:
         self.missed = True
         self.occupied = False
         self.boundary = False
+        self.displayed = False
 
     def __eq__(self, other) -> bool:
         if self.x == other.x and self.y == other.y:
@@ -28,7 +30,7 @@ class Cell:
             return False
 
     def __str__(self) -> str:
-        if self.occupied and not self.shot:
+        if self.displayed and self.occupied and not self.shot:
             return '.'
         elif self.occupied and self.shot and not self.missed:
             return 'X'

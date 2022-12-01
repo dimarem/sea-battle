@@ -16,7 +16,7 @@ class Controller:
     '''Класс описывающий контроллера игрового процесса.'''
     def __init__(self) -> None:
         # количество попыток для создания игровых досок
-        self._attempt = 3
+        self._attempt = 10
         # доска пользователя
         self._human_board = None
         # доска ИИ
@@ -42,11 +42,14 @@ class Controller:
                     print(f'Вы стреляете по ячейке с координатами ({coords[0]}, {coords[1]})')
 
                     try:
-                        self._ai_board.process_shot(coords[0], coords[1])
-                        self._human_step = False
+                        successful = self._ai_board.process_shot(coords[0], coords[1])
+
+                        if not successful:
+                            self._human_step = False
 
                         if self._ai_board.all_ships_are_sunken:
                             print('Вы выиграли!')
+                            self.print_boards()
                             break
                     except (ShootError, CellCoordsError) as e:
                         print(e)
@@ -60,15 +63,19 @@ class Controller:
                 print('=' * 25 + ' ИИ ' + '=' * 25)
                 coords = self._ai_player.shoot()
                 print(f'ИИ стреляет по ячейке с координатами ({coords[0]}, {coords[1]})')
-                self._human_board.process_shot(coords[0], coords[1])
-                self._human_step = True
+                successful = self._human_board.process_shot(coords[0], coords[1])
+
+                if not successful:
+                    self._human_step = True
 
                 if self._human_board.all_ships_are_sunken:
                     print('ИИ выиграл. В следующий раз повезет больше.')
+                    self.print_boards()
                     break
 
             if self._ai_board.all_cells_are_shot or self._human_board.all_cells_are_shot:
                 print('Ничья')
+                self.print_boards()
                 break
 
             self.print_boards()
@@ -78,7 +85,7 @@ class Controller:
         try:
             self._create_human_board()
             self._create_ai_board()
-            self._ai_player = AIPlayer(self._ai_board.min, self._ai_board.max)
+            self._ai_player = AIPlayer(self._ai_board.min + 1, self._ai_board.max + 1)
         except BoardCreationError as e:
             if self._attempt:
                 self._attempt -= 1
@@ -233,7 +240,8 @@ class Controller:
         print('1. Корабль на вашей доске отображается в виде точки.')
         print('2. Для совершения выстрела введите в консоль координаты ячейки ввиде двух чисел, например: 1 2.')
         print('3. Промах отметачется буквой "T", попадание - "X".')
-        print('4. Победит тот, кто первым потопит корабли противника.')
+        print('4. Если выстрел игрока был успешным, он получает еще ход.')
+        print('5. Победит тот, кто первым потопит корабли противника.')
         print()
         print('Удачи!')
 

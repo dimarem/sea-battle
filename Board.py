@@ -19,26 +19,29 @@ class Board:
     min - минимально допустимая координата ячейки по оси X.
     max - максимально допустимая координата ячейки по оси Y.
     all_ships_are_sunken - индикатор потопления всех кораблей.
+    all_cells_are_shot - индикатор того, что по всем ячейкам были произведены выстрелы.
 
     Методы экземпляра:
     add_ship(ship: Ship) - добавить корабль на доску.
     process_shot(x: int, y: int) - обрабатывает выстрел по ячейке доски.
     print - вывести доску в консоль.
     '''
-    _min = 0
-    _max = 6
+    _from = 0
+    _to = 6
 
     def __init__(self, display_ships: bool = True, show_boundary: bool = False) -> None:
-        self._cells = [[Cell(i, j) for i in range(self._min, self._max)]
-                       for j in range(self._min, self._max)]
+
+        self._cells = [[Cell(i, j) for i in range(self._from, self._to)]
+                       for j in range(self._from, self._to)]
+
         self.display_ships = display_ships
         self.show_boundary = show_boundary
         self._ships = []
 
     @property
     def min(self) -> int:
-        '''Минимально допустимая координата ячейки по оси X.'''
-        return self._min
+        '''Минимально допустимая координата ячейки.'''
+        return self._from
 
     @min.setter
     def min(self, value) -> None:
@@ -46,8 +49,8 @@ class Board:
 
     @property
     def max(self) -> int:
-        '''Максимально допустимая координата ячейки по оси Y.'''
-        return self._max - 1
+        '''Максимально допустимая координата ячейки.'''
+        return self._to - 1
 
     @max.setter
     def max(self, value) -> None:
@@ -62,7 +65,7 @@ class Board:
                 if cell.shot:
                     n += 1
 
-        if n == (self._max * self._max):
+        if n == (self._to * self._to):
             return True
         else:
             return False
@@ -96,7 +99,7 @@ class Board:
         ship_cells, ship_boundary_cells = self._allocate_cells(ship)
 
         if len(ship_cells) < ship.length:
-            raise CellsAllocationError('Для данного корабля не удалось выделить достаточное количество ячеек')
+            raise CellsAllocationError
 
         if not self._area_is_acceptable(ship_cells + ship_boundary_cells):
             raise ShipDislocationAreaError
@@ -178,8 +181,9 @@ class Board:
                 return False
         return True
 
-    def process_shot(self, x: int, y: int):
+    def process_shot(self, x: int, y: int) -> bool:
         '''Обрабатывает выстрел по ячейке доски.
+        В качестве значения выозвращает булево значение указывающее на успешность выстрела.
 
         Аргументы:
         x - координата ячейки по оси X.
@@ -194,6 +198,7 @@ class Board:
         elif y < _min or y > _max:
             raise CellCoordsError(f'''Координата "y" должна быть от {_min} до {_max}''')
 
+        # система координат пользователя начинается с 1
         cell = self._cells[x - 1][y - 1]
 
         if cell.shot:
@@ -211,14 +216,15 @@ class Board:
                 else:
                     print('ПОПАЛ!!!')
 
-                return
+                return True
 
-        print('ПРОМАЗАЛ!!!')
+        print('МИМО!!!')
+        return False
 
     def print(self) -> None:
         '''Вывести доску в консоль.'''
         print('  | 1 | 2 | 3 | 4 | 5 | 6 ')
-        for i in range(self._min + 1, self._max + 1):
+        for i in range(self._from + 1, self._to + 1):
             print(f'{i} | {" | ".join(map(str, self._cells[i - 1]))}')
 
 
@@ -450,5 +456,47 @@ if __name__ == '__main__':
         board.print()
     except CellCoordsError as e:
         print(e)
+
+    print()
+
+    print('=' * 50)
+    print('Проверка на потопляемость кораблей.')
+    print()
+    board = Board()
+    ship_1 = Ship({'x': 0, 'y': 0}, 1)
+    ship_2 = Ship({'x': 0, 'y': 5}, 1)
+    ship_3 = Ship({'x': 5, 'y': 0}, 1)
+    ship_4 = Ship({'x': 5, 'y': 5}, 1)
+    board.add_ship(ship_1)
+    board.add_ship(ship_2)
+    board.add_ship(ship_3)
+    board.add_ship(ship_4)
+
+    if not board.all_ships_are_sunken:
+        print('Еще есть на плаву.')
+
+    # система координат для пользователя начинается с 1
+    board.process_shot(1, 1)
+
+    if not board.all_ships_are_sunken:
+        print('Еще есть на плаву.')
+
+    board.process_shot(1, 6)
+
+    if not board.all_ships_are_sunken:
+        print('Еще есть на плаву.')
+
+    board.process_shot(6, 1)
+
+    if not board.all_ships_are_sunken:
+        print('Еще есть на плаву.')
+
+    board.process_shot(6, 6)
+
+    if not board.all_ships_are_sunken:
+        print('Еще есть на плаву.')
+
+    if board.all_ships_are_sunken:
+        print('Все потоплены.')
 
     print()

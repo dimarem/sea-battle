@@ -7,15 +7,15 @@ class AIPlayer:
 
     Аргументы:
     min_coord - минимальная координата для совершения выстрела.
-    max_coord - макстимальная координата для совершения выстрела.
+    max_coord - максимальная координата для совершения выстрела.
     '''
     def __init__(self, min_coord: int, max_coord: int) -> None:
         self._min_coord = min_coord
         self._max_coord = max_coord
-        # координаты совершенных ранее шагов
+        # координаты совершенных ранее выстрелов
         self._coords = []
 
-    def shoot(self) -> tuple:
+    def shoot(self) -> tuple[int, int]:
         '''Совершить выстрел и запомнить его данные.'''
         while True:
             x = randint(self._min_coord, self._max_coord)
